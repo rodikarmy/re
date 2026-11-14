@@ -1,0 +1,6 @@
+{
+  "provider": "openai",
+  "baseUrl": "https://plusvibeapi.ru/v1",
+  "apiKey": "sk-pv-8ebbd44ce1b0e9c0ca6beee9a8c145f5",
+  "model": "z-ai/glm-5.3-flash:cxb"
+}

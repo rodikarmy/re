@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "skills": {
+    "wakaru": {
+      "source": "pionxzh/wakaru",
+      "sourceType": "github",
+      "skillPath": "skills/wakaru/SKILL.md",
+      "computedHash": "75849627ff353cf21d5b0886aaf082a20c499712c0f1ae2de44f014a56c4262f"
+    }
+  }
+}

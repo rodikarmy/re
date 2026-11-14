@@ -1,0 +1,306 @@
+/*
+ * Тема, извлечённая из /assets/root-Dz-Vsc7R.css сайта newmaterial.ai
+ * (минифицированный дамп: /tmp/opencode/root.pretty.css).
+ * Только то, что нужно форме сбора контактов и стопке карточек.
+ */
+
+@import "tailwindcss";
+
+/* ── Шрифты (ABC Favorit, скачаны с оригинала в public/fonts) ───────── */
+@font-face {
+  font-family: "ABC Favorit";
+  src: url("/fonts/ABCFavorit-Book.woff2") format("woff2");
+  font-weight: 350;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "ABC Favorit";
+  src: url("/fonts/ABCFavorit-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "ABC Favorit";
+  src: url("/fonts/ABCFavorit-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "ABC Favorit Mono";
+  src: url("/fonts/ABCFavoritMono-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "ABC Favorit Lining";
+  src: url("/fonts/ABCFavoritLining-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ── Кастомные варианты Tailwind (так же, как в оригинале) ───────────── */
+@custom-variant touch (&:where(:hover, :active));
+@custom-variant pointer-coarse {
+  @media (pointer: coarse) {
+    @slot;
+  }
+}
+@custom-variant pointer-fine {
+  @media (pointer: fine) {
+    @slot;
+  }
+}
+
+/* ── Tailwind theme tokens ──────────────────────────────────────────── */
+@theme {
+  --font-sans:
+    "ABC Favorit", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-mono:
+    "ABC Favorit Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    monospace;
+  --font-lining:
+    "ABC Favorit Lining", "ABC Favorit", ui-sans-serif, system-ui, sans-serif;
+
+  --spacing: 0.25rem;
+  --default-font-family: var(--font-sans);
+  --default-transition-duration: 0.15s;
+  --default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* В оригинале "normal" вес = 350 (ABC Favorit Book) */
+  --font-weight-normal: 350;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-regular: 400;
+
+  /* Типографика формы (мобильные значения; десктопные переопределяются ниже) */
+  --text-body: 1.125rem;
+  --text-caption: 1rem;
+  --text-footnote: 0.875rem;
+  --text-title: 1.75rem;
+  --text-title-body: 1.3125rem;
+
+  --tracking-normal: -0.025em;
+  --leading-tight: 1.25;
+  --leading-snug: 1.375;
+
+  /* Цвета (свет/тьма через light-dark(), работает с color-scheme) */
+  --color-bg: var(--bg);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-white: #fff;
+  --color-black: #000;
+
+  /* Тени */
+  --shadow-mild: var(--mild-shadow);
+  --shadow-subtle: var(--subtle-shadow);
+  --mild-shadow: 0 2px 12px #00000014;
+  --subtle-shadow: 0 1px 12px #0000000f;
+  --content-shadow: 0 2px 16px 0 #00000005;
+
+  --ease-damped-spring: linear(
+    0,
+    0.169 10%,
+    0.441 20%,
+    0.665 30%,
+    0.814 40%,
+    0.903 50%,
+    0.953 60%,
+    0.978 70%,
+    0.991 80%,
+    1
+  );
+}
+
+/* Десктопные переопределения типографики (root.pretty.css строки 10906-10915) */
+@media (min-width: 40rem) {
+  :root {
+    --text-caption: 1.125rem;
+    --text-footnote: 1rem;
+    --text-title: 1.6rem;
+    --text-title-body: 1.625rem;
+  }
+}
+
+/* ── Глобальные переменные сайта ────────────────────────────────────── */
+:root {
+  --bg: light-dark(#fff, #0a0a0a);
+  --fg: light-dark(#2a292e, #ededed);
+  --muted: light-dark(#6b7280, #a1a1aa);
+  --accent: light-dark(#2563eb, #83b2eb);
+  --blob-bg: light-dark(#fff, #30333d);
+
+  /* Persona capture form (полный набор из root.css) */
+  --persona-capture-bg: light-dark(#1c2326, #edf0f1);
+  --persona-capture-action-bg: var(--color-white);
+  --persona-capture-action-fg: var(--color-black);
+  --persona-capture-cancel-bg: #f58220; /* оранжевый — заливка при отмене */
+  --persona-capture-action-outline: var(--fg);
+  @supports (color: color-mix(in lab, red, red)) {
+    --persona-capture-action-outline: color-mix(
+      in srgb,
+      var(--fg) 12%,
+      transparent
+    );
+  }
+  --persona-capture-action-shadow: transparent;
+  --persona-capture-shell-bg: #0000000a;
+  --persona-capture-card-bg: var(--bg);
+  --persona-capture-card-outline: #ffffff80;
+  --persona-capture-inner-outline: light-dark(var(--color-white), #ffffff14);
+}
+
+/* ── Базовые стили ──────────────────────────────────────────────────── */
+.light,
+.dark,
+.system {
+  color-scheme: light;
+}
+
+html,
+body {
+  color: var(--fg);
+  background-color: var(--blob-bg);
+}
+
+::selection {
+  background-color: var(--selection-bg, var(--fg));
+  color: var(--selection-fg, var(--bg));
+}
+
+/* ── Утилиты типографики из root.css ────────────────────────────────── */
+@utility text-caption {
+  font-size: var(--text-caption);
+  letter-spacing: -0.02em;
+  line-height: normal;
+}
+@utility text-footnote {
+  font-size: var(--text-footnote);
+  letter-spacing: -0.02em;
+  line-height: normal;
+}
+@utility text-body {
+  color: var(--body-text-color, currentColor);
+  font-size: var(--text-body);
+  font-weight: var(--body-font-weight, var(--font-weight-normal));
+  letter-spacing: var(--body-letter-spacing, -0.02em);
+  line-height: var(--body-line-height, 1.5);
+}
+
+/* ── Speech bubble follow-up сообщения (root.pretty.css 13202-13270) ── */
+@property --persona-message-active {
+  syntax: "<percentage>";
+  inherits: true;
+  initial-value: 0%;
+}
+
+.persona-message {
+  --persona-message-active: 0%;
+  transition: --persona-message-active 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.persona-message:focus-within,
+.persona-message[data-detached] {
+  --persona-message-active: 100%;
+}
+.persona-message-background {
+  background: var(--selection-bg);
+}
+@supports (color: color-mix(in lab, red, red)) {
+  .persona-message-background {
+    background: color-mix(
+      in oklch,
+      var(--selection-bg) var(--persona-message-active),
+      transparent
+    );
+  }
+}
+.persona-message-background {
+  opacity: 0.06;
+  transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.persona-message[data-detached] .persona-message-background {
+  opacity: 0;
+}
+.persona-message-submitted {
+  opacity: 0;
+  transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.persona-message[data-detached] .persona-message-submitted {
+  opacity: 1;
+  transition-duration: 0.16s;
+}
+.persona-message[data-detached] {
+  color: var(--color-white);
+}
+.persona-message textarea {
+  -webkit-text-fill-color: currentColor;
+}
+.persona-message-send {
+  background: var(--selection-bg);
+}
+@supports (color: color-mix(in lab, red, red)) {
+  .persona-message-send {
+    background: color-mix(
+      in oklch,
+      var(--selection-bg) var(--persona-message-active),
+      var(--fg)
+    );
+  }
+}
+.persona-message-send {
+  transition:
+    opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.3s ease-out;
+}
+.persona-message[data-detached] .persona-message-send {
+  opacity: 0;
+  filter: blur(4px);
+  pointer-events: none;
+  transition-duration: 0.12s;
+}
+
+/* ── Кнопка LinkedIn/X ("more from context") ────────────────────────── */
+/* (root.pretty.css строки 11817-11870) */
+.more-from-context-arrow-button {
+  width: var(--more-context-arrow-size);
+  height: var(--more-context-arrow-size);
+  background-color: var(--artifact-presentation-bg);
+  color: var(--more-from-context-arrow-tint, var(--artifact-presentation-fg));
+  border: 0;
+  border-radius: 9999px;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+}
+.more-from-context-arrow-visual {
+  z-index: 1;
+  border: 1px solid var(--artifact-presentation-fg);
+  border-radius: inherit;
+  background-color: var(--artifact-presentation-bg);
+  box-shadow: var(--content-shadow);
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  position: absolute;
+  inset: 0;
+}
+@supports (color: color-mix(in lab, red, red)) {
+  .more-from-context-arrow-visual {
+    border: 1px solid
+      color-mix(in srgb, var(--artifact-presentation-fg) 12%, transparent);
+  }
+}
+.more-from-context-arrow-button-icon {
+  width: 1.3125rem;
+  height: 1.3125rem;
+}

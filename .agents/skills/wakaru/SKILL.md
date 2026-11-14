@@ -1,0 +1,305 @@
+---
+name: wakaru
+description: >-
+  Turn minified, bundled, or transpiled JavaScript back into readable modules.
+  Use when you encounter unreadable production JS — a webpack/esbuild/Metro/Rollup
+  bundle, a minified vendor script, Babel/TypeScript/SWC-transpiled output, or
+  a single mangled .js file — and need to read, audit, debug it, or recover a
+  best-effort SFC artifact from compiled Vue 3 component code. Not a
+  deobfuscator.
+license: Apache-2.0
+---
+
+# Wakaru — JavaScript decompiler and bundle unpacker
+
+Wakaru recovers readable source from production JavaScript: it splits bundles
+into modules, reverses transpiler helpers (async/await, classes, JSX, spread,
+optional chaining, …), and undoes minification. It recovers **structure**
+deterministically and applies only conservative renaming heuristics — most
+mangled locals stay short unless a source map is provided.
+
+## When to use this
+
+- A file is one giant line, or full of `_interopRequireDefault`,
+  `__awaiter`, `e,t,r` parameters, `void 0`, `!0`/`!1`.
+- You have a webpack bundle, supported Vercel ncc CommonJS output with an IIFE
+  webpack bootstrap, Turbopack (Next.js 15.3+) chunks, or an
+  esbuild/Bun/Metro/Browserify/Cocos Creator 2.x/Closure ModuleManager/
+  SystemJS/AMD/Rollup/Vite bundle and need the individual modules.
+- You have a Bun single-file PE, Mach-O, or ELF executable and need its embedded
+  JavaScript without running it.
+- You have a Google Tag Manager container (`gtm.js`) and need its Custom HTML
+  and Custom JavaScript code as separate files: `wakaru gtm.js --unpack -o out/`
+  writes `macros/`, `tags/`, and an `index.md` that says what each
+  `__gtm_macro_<n>` is and when each tag fires.
+- You need every file stored in a Bun single-file executable, including binary assets,
+  WebAssembly, native add-ons, or embedded databases.
+- You have compiled Vue 3 component JavaScript and want a best-effort `.vue`
+  artifact for inspection.
+- A stack trace points into vendored/minified code you can't read.
+- You're auditing what a site or dependency actually ships.
+
+## Setup
+
+Requires the CLI. Prefer running via `npx` (no global install):
+
+```bash
+npx wakaru --version
+```
+
+If invoked repeatedly, install once: `npm install -g wakaru@latest`.
+In this document `wakaru` means `npx wakaru` unless installed globally.
+
+## Core workflows
+
+### 1. Decompile a single file
+
+For one minified/transpiled file. Use `--json` for structured stdout. Without
+`-o`, the decompiled source is included in the JSON `code` field; with `-o`,
+the file is still written and `code` is omitted:
+
+```bash
+echo '<code>' | wakaru --json
+# → {"code":"...readable...","warnings":[],"elapsed_ms":N}
+```
+
+Or file-to-file: `wakaru input.js -o output.js` (stdout if `-o` omitted).
+
+### 2. Unpack a bundle (the important one)
+
+A bundle can explode into thousands of modules — do **not** dump them all
+into context. Unpack to a directory, inspect the JSON output, then open only
+the files you need:
+
+```bash
+wakaru bundle.js --unpack --json -o out/
+# → {"detected_formats":["webpack4"],"modules":[{"filename":"module-0.js"},...],
+#    "total":42,"failed":0,"warnings":[],"elapsed_ms":N}
+```
+
+Use a fresh output directory. Wakaru refuses to write into a non-empty
+directory unless `--force` is passed; use `--force` only after confirming that
+overwriting its contents is acceptable.
+
+Then read specific files from `out/` (e.g. `out/module-0.js`) on demand. Triage
+by size first (`ls -lS out/`) — the largest modules are usually vendored
+libraries; the app code is often smaller and more numerous.
+
+Variants:
+
+```bash
+wakaru dist/ --unpack --json -o out/          # scan a build-output directory
+wakaru entry.js chunk.js --unpack -o out/     # explicit entry + chunk files
+wakaru ./compiled-app --unpack --raw -o out/  # extract a Bun single-file executable safely
+wakaru bun extract ./compiled-app -o raw/     # dump every embedded Bun file as the bundler emitted it
+```
+
+Bun single-file executable extraction requires an explicit executable path
+(directory scans and stdin handle JavaScript only). `--unpack` selects the
+JavaScript-like records and sends them through
+bundle splitting. If stderr shows `note: <input> embeds N original source
+file(s) in Bun source maps`, run the `wakaru bun extract` command it names
+and read `sources/` before the decompiled output. Prefer `--raw` when
+comparing their shipped representation:
+it still splits statements and declarations so the chunks link as ESM, so use
+`wakaru bun extract` when the exact bytes matter.
+
+Use `wakaru bun extract` instead when the task needs the container itself. It
+writes every validated file record below `raw/files/` and records loader
+metadata and byte ranges in `raw/manifest.json`. Files are stored bytes, except
+records with `"encoding": "utf16le"` (Bun 1.4.1+ non-ASCII text), which are
+written as UTF-8; their `bytes` and `executable_range` describe the stored
+UTF-16, and `output_bytes` the written file.
+
+If the app was compiled with `--sourcemap`, `raw/sources/` holds the original
+pre-bundle files (for example TypeScript with types and comments), and the
+manifest's `sources` list maps each original `path` to its `output_path`.
+Check it before decompiling: when it is present, read those files instead of
+the bundled JavaScript. A `..` path component is written as `%2E%2E`. A
+record listed in `skipped_sources` had a map Wakaru could not read; its
+sources are missing, so fall back to its decompiled JavaScript. Add `--json` for the same manifest on stdout.
+`--include-internals` also emits opaque Bun source-map, JavaScriptCore bytecode,
+and module-info regions; do not treat `source-map.bunmap` as a v3 JSON map.
+The original sources are written without this flag.
+The extractor supports Bun 1.3.3+.
+
+Module filenames are `module-<id>.js` unless the bundle carries usable naming
+hints (resource paths, dependency-map requests, original input paths), which
+yield readable relative filenames; collisions are made unique. Raw output
+keeps provisional extraction names.
+
+When you need to check a recovered module against the input, add
+`--provenance` to the unpack command. Look up its emitted filename in
+`out/provenance.json` for the source input and `[start, end)` byte ranges.
+
+### 3. Recover names / original source when a map exists
+
+```bash
+wakaru input.js --source-map input.js.map -o output.js   # recover names
+wakaru extract input.js.map -o src/                       # dump sourcesContent
+```
+
+Input `--source-map` is single-file only and cannot be combined with
+`--unpack`; extracted modules do not retain the bundle's generated coordinates.
+Use `--emit-source-map` when unpacked output maps are needed.
+
+### 4. Recover Vue 3 components as SFC artifacts
+
+Use `--vue-sfc` when the input is compiled Vue 3 component JavaScript or a
+bundle likely to contain it. Recovery is best-effort and additive: unpack mode
+still writes JavaScript for every module, and recoverable Vue modules also get
+sibling `.vue` artifacts.
+
+```bash
+wakaru input.js --vue-sfc -o output.js
+wakaru input.js --vue-sfc -o App.vue
+wakaru bundle.js --unpack --vue-sfc --json -o out/
+```
+
+For one file, use `-o` to write recovered Vue output; without it, stdout
+remains JavaScript. For batch analysis, prefer `--unpack --vue-sfc --json` and
+inspect the JSON output first. Each `modules` entry describes an output artifact. Its `kind` is
+`javascript` or `vue_sfc`; Vue-related `status` values are
+`recovered_vue_sfc`, `vue_sfc_source_js`, and `vue_sfc_fallback_js`. Open
+recovered `.vue` files for template inspection, but keep the paired JavaScript
+artifact around when recovery falls back or looks too heuristic. Do not
+present recovered SFCs as original source.
+
+### 5. Decode a captured React Server Components payload (experimental)
+
+A React Server Components payload (React's Flight wire format) is data, not
+JavaScript: do not run it through decompilation or unpacking. Next.js embeds
+it in page HTML as `self.__next_f.push(...)` calls.
+
+```bash
+wakaru rsc page.html -o rsc.json       # saved Next.js page or script
+wakaru rsc payload.rsc -o rsc.json     # raw payload rows
+```
+
+The JSON holds `rows` (hex `id`, `tag`, `kind`, raw `payload`, and `json` when
+React parses it), `assets` (the script and stylesheet paths the payload loads),
+`scripts` (a page's `<script src>` files, which include the bundler runtime the
+payload never names; download both lists and pass them to `--unpack`), and `problems` (rows and push calls
+that did not decode; the rest is still written). `format` is `raw` or
+`next.__next_f`. Input with no payload fails. Model rows keep React's `$`
+references (`"$L3"`) as strings: the tree they describe is not reconstructed.
+The output can change in any release.
+
+## Heavily obfuscated input
+
+For string-array encoding, control-flow flattening, VM protectors, and similar
+obfuscation, first use [webcrack](https://github.com/j4k0xb/webcrack) to strip
+the obfuscation. Leave unpacking and unminifying to Wakaru:
+
+```bash
+# 1. Strip the obfuscation; leave unpacking and unminifying to Wakaru.
+npx webcrack --no-unpack --no-unminify obfuscated.js > deobfuscated.js
+
+# 2. Recover readable modules.
+npx wakaru deobfuscated.js --unpack -o out/
+```
+
+## Rewrite levels — pick by intent
+
+- `--level minimal` — near-zero semantic change. **Prefer for security review,
+  auditing, or diffing** to minimize semantic risk, but do not treat its output
+  as a formal equivalence guarantee.
+- `--level standard` — default; balanced readability and correctness.
+- `--level aggressive` — maximum readability; stronger heuristics that may
+  alter edge-case behavior. Use when you just need to understand the code.
+- `--unpack=inspect` — recursively retain finer scope-hoist boundaries for
+  static inspection. The resulting module graph may not preserve runtime
+  initialization order; the CLI prints a warning whenever this mode is used.
+  Add `--raw` independently to skip the readability pipeline; `--level` has
+  no effect with `--raw`.
+
+By default, Wakaru removes only dead code introduced by its own transforms and
+preserves dead code already present in the input. Use `--dce` when a full
+reachability sweep is desired.
+
+## Interpreting output
+
+- **Exit code** 0 = success, non-zero = a fatal error (bad arguments, I/O) or
+  at least one error-class warning. Errors go to stderr; `--json` output goes
+  to stdout.
+- Inspect every JSON warning's `is_error` field. Entries with `is_error: false`
+  are non-fatal. An error-class warning makes the command exit non-zero, but
+  Wakaru still writes the JSON output and every artifact; modules without an
+  error-class warning remain usable.
+- Use `--diagnostics` to catch emitted declaration conflicts during decompile or
+  unpack, including `var` versus `let`/`const`, and output that fails to
+  re-parse. `duplicate_declaration` and `output_parse_*` warnings are
+  error-class; legal repeated `var` declarations are allowed. Without
+  `--diagnostics`, emitted modules are not re-parsed.
+- A `cross_module_class_call` warning (non-error) means that module may call a
+  recovered class without `new` at runtime. Rerun with `--level minimal` if the
+  output must execute.
+- A `commonjs_export_unrecovered` warning (non-error) means an ESM output
+  module still accesses the listed exports through `exports` or
+  `module.exports`. Those accesses throw a `ReferenceError` when they run, so
+  treat that module's export surface as incomplete.
+- A module that keeps a `require()` call (lazy, conditional, or after a
+  side effect) stays CommonJS: ESM has no `require`. A
+  `commonjs_require_unrecovered` warning (non-error) means an ESM output
+  module still calls `require` for the listed specifiers anyway; those calls
+  throw when they run.
+- A `commonjs_require_of_esm` warning (non-error) means a CommonJS output
+  module requires a module now recovered as ESM, so `require` returns that
+  module's namespace; a read of a replaced `module.exports` value, or of a
+  default whose interop was removed or whose provider has no default export,
+  gets the namespace instead, and a write to it fails.
+- A `commonjs_exports_escape` warning (non-error) means a module passes a
+  provider's exports object to a function in another module or one wakaru
+  cannot follow, and that provider is now ESM. If the function writes to the
+  object, it throws at runtime; check that call before running the output.
+- A `missing_imported_name` warning (non-error) means an ESM output module
+  imports a name its sibling ESM module does not export. Node cannot link
+  it, so treat that edge, and every module that imports through it, as
+  broken output, not as a missing export to look for elsewhere.
+- With `--diagnostics`, an `es_source_kept_commonjs` warning (non-error)
+  names a module that stayed CommonJS although its input looks compiled from
+  an ES module, with the evidence and the kept requires. Its imports are
+  still `require` calls; follow them as imports.
+- A `.cjs` or `.cts` input is decompiled as CommonJS: its `require()` calls and
+  `module.exports` stay in place, so its output has no imports to follow.
+  `--unpack` does not apply this yet: a `.cjs` input or recovered module can
+  still come out with ESM syntax, which Node cannot load from a `.cjs` file.
+- Before rebuilding unpack output with a bundler, check ESM modules that
+  default-import a CommonJS sibling setting `__esModule`: Node reads
+  `module.exports`, a bundler reads `exports.default` (usually `undefined`).
+  Rename every file without module syntax (`import`, `export`,
+  `import.meta`, or top-level `await`) to `.cjs`, scripts included, update
+  the specifiers, and add
+  `{"type": "module"}` at the output root.
+- A `bundle_split_refused` warning (non-error) names a file from a directory
+  scan that matched a bundle format but was not split; the message gives the
+  format and the reason. It is in the output as one decompiled file, so read
+  it as a single module, not as a missing bundle.
+- A `runtime_residual` warning (non-error) means that module still calls a
+  bundler runtime helper the output does not define, such as
+  `__turbopack_context__.L(...)` (Turbopack chunk loading),
+  `__turbopack_context__.P(...)` (path resolution), or webpack's
+  `require.e` / `require.t` around a lazy `import()`, or a webpack
+  `require(id)` whose module id no output links (the message says whether
+  the id is in no input, in an opaque module, or in several modules of the
+  build). Read the module normally; only that call is unresolved. For
+  webpack, check that the chunk file holding the loaded module is among the
+  inputs, once.
+- `failed` in unpack JSON counts distinct modules with at least one
+  error-class warning (decompile failures, declaration conflicts, output parse
+  failures); `total` is the module count. `failed > 0` always comes with a
+  non-zero exit. When `failed < total`, read the other modules normally and
+  report the failed ones.
+- With `--vue-sfc`, `recovered_vue_sfc` means a `.vue` artifact was written;
+  `vue_sfc_source_js` is the paired JavaScript for that recovered module; and
+  `vue_sfc_fallback_js` means the module looked Vue-like but stayed JavaScript.
+- Mangled short names (`e`, `t`, `n`) in the output are expected without a
+  source map — Wakaru renames only where the code gives evidence. Pair with
+  an LLM renamer or a source map if names matter.
+
+## Safety
+
+Only decompile code you are authorized to analyze. Reading what a third party
+ships is a legitimate security-research and debugging activity; using it
+against targets without consent may be illegal. You are responsible for
+compliance.
