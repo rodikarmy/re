@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { cn } from "../../lib/cn";
+import { cn } from "../../../lib/cn";
 import { decodeContactEmail, type ContactEmailKind } from "../../lib/contactEmail";
 import { useTint } from "../persona-capture/tint";
 

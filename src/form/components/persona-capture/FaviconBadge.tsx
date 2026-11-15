@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { faviconUrl } from "../../lib/validation";
-import { spring, FAVICON_TIMEOUT_MS } from "../../lib/motion";
+import { spring, FAVICON_TIMEOUT_MS } from "../../../lib/motion";
 
 /**
  * FaviconBadge (`_Component3`) — реализация

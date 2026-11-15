@@ -1,18 +1,18 @@
-import { GetInTouch } from "./components/get-in-touch/GetInTouch";
-import { TintProvider } from "./components/persona-capture/tint";
+import { Navigate, Route, Routes } from "react-router-dom";
+import { ContactFormPage } from "./form";
+import { SpiralDemoPage } from "./spiral-demo/SpiralDemoPage";
 
 /**
- * Демо страницы Get in touch (оригинал: layout content.layout-чанка
- * оборачивает всё в TintProvider value="var(--color-accent)").
- * Форма влетает в панель, заголовок + email-чип — как на сайте.
- * Смена темы: класс light/dark на <html> (см. index.css).
+ * Маршруты приложения. Контактная форма доступна по адресу
+ * /newmaterialai-contact-form, демо спирали — по адресу /spiral,
+ * остальные адреса редиректят на контактную форму.
  */
 export default function App() {
   return (
-    <TintProvider value="var(--color-accent)" textColor="var(--color-accent-fg)">
-      <main className="min-h-dvh bg-bg text-fg">
-        <GetInTouch />
-      </main>
-    </TintProvider>
+    <Routes>
+      <Route path="/newmaterialai-contact-form" element={<ContactFormPage />} />
+      <Route path="/spiral" element={<SpiralDemoPage />} />
+      <Route path="*" element={<Navigate to="/newmaterialai-contact-form" replace />} />
+    </Routes>
   );
 }

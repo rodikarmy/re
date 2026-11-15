@@ -1,6 +1,6 @@
-import { cn } from "../../lib/cn";
+import { cn } from "../../../lib/cn";
 import { useTint } from "./tint";
-import { CheckIcon } from "../ui/icons";
+import { CheckIcon } from "../../../components/ui/icons";
 
 /**
  * ReceiveUpdatesCheckbox (`_Component2`) — реализация

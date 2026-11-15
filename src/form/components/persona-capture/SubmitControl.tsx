@@ -7,11 +7,11 @@ import {
   useReducedMotion,
   useTransform,
 } from "motion/react";
-import { cn } from "../../lib/cn";
-import { spring, popSpring } from "../../lib/motion";
+import { cn } from "../../../lib/cn";
+import { spring, popSpring } from "../../../lib/motion";
 import { useTint } from "./tint";
-import { IconButton } from "../ui/IconButton";
-import { ArrowRightIcon, CheckIcon, XIcon } from "../ui/icons";
+import { IconButton } from "../../../components/ui/IconButton";
+import { ArrowRightIcon, CheckIcon, XIcon } from "../../../components/ui/icons";
 
 /**
  * SubmitControl (`_Component5`) — полная реализация

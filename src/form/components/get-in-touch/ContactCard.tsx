@@ -11,7 +11,7 @@ import { PersonaCard } from "../PersonaCard";
 import {
   contactCardHidden,
   paperSpring,
-} from "../../lib/motion";
+} from "../../../lib/motion";
 
 /**
  * ContactCard (`Ks` в content.layout-чанке, строки 2521-2629).

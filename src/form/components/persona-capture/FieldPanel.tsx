@@ -1,11 +1,11 @@
 import { motion } from "motion/react";
-import { cn } from "../../lib/cn";
+import { cn } from "../../../lib/cn";
 import {
   spring,
   FIELD_STACK_STEP_PX,
   FIELD_PANEL_HEIGHT,
   FIELD_PANEL_HEIGHT_WITH_FOOTER,
-} from "../../lib/motion";
+} from "../../../lib/motion";
 import type { CaptureFieldState } from "./types";
 
 /**

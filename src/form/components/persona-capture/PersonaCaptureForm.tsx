@@ -6,11 +6,11 @@ import {
   useMotionValue,
   useReducedMotion,
 } from "motion/react";
-import { cn } from "../../lib/cn";
+import { cn } from "../../../lib/cn";
 import {
   spring,
   COUNTDOWN_DURATION_MS,
-} from "../../lib/motion";
+} from "../../../lib/motion";
 import {
   corporateEmailDomain,
   isValidEmail,

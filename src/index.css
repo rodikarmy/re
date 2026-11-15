@@ -211,6 +211,11 @@ body {
   letter-spacing: -0.02em;
   line-height: normal;
 }
+@utility text-caption-10 {
+  font-size: 10px;
+  letter-spacing: -0.02em;
+  line-height: normal;
+}
 @utility text-footnote {
   font-size: var(--text-footnote);
   letter-spacing: -0.02em;

@@ -21,8 +21,8 @@ import {
   MAX_MESSAGE_LENGTH,
 } from "../../lib/validation";
 import type { CapturePhase, SubmissionCallbacks } from "./types";
-import { ScrollArea } from "../ui/ScrollArea";
-import { ArrowRightIcon } from "../ui/icons";
+import { ScrollArea } from "../../../components/ui/ScrollArea";
+import { ArrowRightIcon } from "../../../components/ui/icons";
 import { SocialButton } from "./SocialButton";
 
 /**

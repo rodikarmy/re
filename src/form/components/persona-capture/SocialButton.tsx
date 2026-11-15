@@ -1,4 +1,4 @@
-import { cn } from "../../lib/cn";
+import { cn } from "../../../lib/cn";
 
 /**
  * SocialButton (`He`, экспорт `S` чанка формы) — реализация
