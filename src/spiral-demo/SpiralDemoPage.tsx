@@ -1,8 +1,8 @@
 import { SpiralScene } from "../components/spiral";
 
 /**
- * Демо интро-эффекта contentarchitecture.dev: спираль из символов
- * «THE CONTENT ARCHITECTURE.» на весь экран.
+ * Демо интро-эффекта contentarchitecture.dev: спираль из случайных
+ * нулей и единиц на весь экран.
  *
  * Разметка повторяет мобильный экран оригинала — чёрная сцена
  * (`bg-black`) с канвасом спирали; лейбл «TAP & HOLD» рисует сам

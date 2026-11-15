@@ -51,7 +51,7 @@ interface Ripple {
 }
 
 /**
- * The spiral of characters from "THE CONTENT ARCHITECTURE.".
+ * The spiral of characters: a random binary stream laid out as glyphs.
  *
  * Thirty instanced rings of glyphs spin around the center. Pressing and
  * holding charges the spiral (it gathers inwards, shivers and glitches),

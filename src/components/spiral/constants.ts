@@ -6,22 +6,26 @@
  * glyph (or a dot) from a character atlas texture.
  */
 
-/** The tagline laid out on the spiral. The final "." becomes a plain dot. */
-export const QUOTE = "THE CONTENT ARCHITECTURE.";
+/** Number of binary digits laid out on the spiral. */
+const QUOTE_LENGTH = 8;
 
-/** Index of the "." character — used as the dot glyph inside the atlas. */
-export const DOT_INDEX = QUOTE.indexOf(".");
+/** The tagline laid out on the spiral: a fresh random binary stream per load. */
+export const QUOTE = Array.from(
+  { length: QUOTE_LENGTH },
+  () => (Math.random() < 0.5 ? "0" : "1"),
+).join("");
 
-/** Indices of every real letter (everything except the dot). */
-export const LETTER_INDEXES = Array.from(QUOTE)
-  .map((_, index) => index)
-  .filter((index) => index !== DOT_INDEX);
+/** Atlas index of the dot glyph; it occupies a cell after the quote. */
+export const DOT_INDEX = QUOTE.length;
+
+/** Indices of every real character (the whole quote). */
+export const LETTER_INDEXES = Array.from(QUOTE).map((_, index) => index);
 
 /** Atlas cells per row: the atlas is a fixed 8-column grid of 64px cells. */
 export const ATLAS_COLUMNS = 8;
 
-/** Number of rows the atlas needs to hold the whole tagline. */
-export const ATLAS_ROWS = Math.ceil(QUOTE.length / ATLAS_COLUMNS);
+/** Number of rows the atlas needs to hold the quote plus the dot cell. */
+export const ATLAS_ROWS = Math.ceil((QUOTE.length + 1) / ATLAS_COLUMNS);
 
 /** Angular half-span (radians) around which letters prefer to cluster. */
 export const LETTER_BAND_SPAN = Math.PI * 0.65;
