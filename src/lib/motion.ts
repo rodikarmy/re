@@ -30,3 +30,20 @@ export const FIELD_STACK_STEP_PX = 24;
 /** Высота панели поля: 94, или 124 если есть footer. */
 export const FIELD_PANEL_HEIGHT = 94;
 export const FIELD_PANEL_HEIGHT_WITH_FOOTER = 124;
+
+/* ── paper-stack-чанк (вход contact-карточки и перестановки стопки) ── */
+
+/** Spring входа/перестановок стопки (`we` в paper-stack-чанке). */
+export const paperSpring = {
+  bounce: 0.3,
+  duration: 1.2,
+  type: "spring",
+} as const;
+
+/** Скрытое состояние contact-карточки до входа (`oe` в paper-stack-чанке). */
+export const contactCardHidden = {
+  opacity: 0,
+  rotate: -12,
+  x: 30,
+  y: -420,
+} as const;

@@ -1,14 +1,18 @@
-import { PersonaCard } from "./components/PersonaCard";
+import { GetInTouch } from "./components/get-in-touch/GetInTouch";
+import { TintProvider } from "./components/persona-capture/tint";
 
 /**
- * Демо: persona-карточка с формой в визуале оригинала.
- * Фазовая машина и анимации реализованы; MessageComposer (follow-up)
- * пока заглушка. Смена темы: класс light/dark на <html> (см. index.css).
+ * Демо страницы Get in touch (оригинал: layout content.layout-чанка
+ * оборачивает всё в TintProvider value="var(--color-accent)").
+ * Форма влетает в панель, заголовок + email-чип — как на сайте.
+ * Смена темы: класс light/dark на <html> (см. index.css).
  */
 export default function App() {
   return (
-    <main className="min-h-svh grid place-items-center bg-bg">
-      <PersonaCard source="get-in-touch" />
-    </main>
+    <TintProvider value="var(--color-accent)" textColor="var(--color-accent-fg)">
+      <main className="min-h-dvh bg-bg text-fg">
+        <GetInTouch />
+      </main>
+    </TintProvider>
   );
 }
